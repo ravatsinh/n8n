@@ -9,7 +9,7 @@ const config = convict({
 		type: {
 			doc: 'Type of database to use',
 			format: ['sqlite', 'mariadb', 'mysqldb', 'postgresdb'],
-			default: 'sqlite',
+			default: 'mysqldb',
 			env: 'DB_TYPE',
 		},
 		tablePrefix: {
@@ -471,7 +471,7 @@ const config = convict({
 			doc: 'Disable production webhooks from main process. This helps ensures no http traffic load to main process when using webhook-specific processes.',
 		},
 		skipWebhoooksDeregistrationOnShutdown: {
-			/** 
+			/**
 			 * Longer explanation: n8n deregisters webhooks on shutdown / deactivation
 			 * and registers on startup / activation. If we skip
 			 * deactivation on shutdown, webhooks will remain active on 3rd party services.

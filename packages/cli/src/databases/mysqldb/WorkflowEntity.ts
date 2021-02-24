@@ -24,6 +24,11 @@ export class WorkflowEntity implements IWorkflowDb {
 	@Column({
 		length: 128,
 	})
+	userId: string;
+
+	@Column({
+		length: 128,
+	})
 	name: string;
 
 	@Column()

@@ -183,6 +183,26 @@ class App {
 		};
 	}
 
+	getCookieUserId(headerCookies: string) {
+		//let name = cname + "=";
+		const name = 'a_user=';
+		// @ts-ignore
+		const decodedCookie = decodeURIComponent(headerCookies);
+
+		const ca = decodedCookie.split(';');
+		for(let i = 0; i <ca.length; i++) {
+			let c = ca[i];
+			// tslint:disable-next-line:triple-equals
+			while (c.charAt(0) == ' ') {
+				c = c.substring(1);
+			}
+			// tslint:disable-next-line:triple-equals
+			if (c.indexOf(name) == 0) {
+				return c.substring(name.length, c.length);
+			}
+		}
+		return "";
+	}
 
 	/**
 	 * Returns the current epoch time
@@ -471,14 +491,19 @@ class App {
 			newWorkflowData.updatedAt = this.getCurrentDate();
 
 			newWorkflowData.id = undefined;
+			// @ts-ignore
+			newWorkflowData.userId = this.getCookieUserId(req.headers.cookie);
 
 			await this.externalHooks.run('workflow.create', [newWorkflowData]);
-
+			console.log('req Log: ',req.headers.cookie);
+			// @ts-ignore
+			console.log('this.getCookieUserId(req.headers.cookie)',this.getCookieUserId(req.headers.cookie));
 			// Save the workflow in DB
 			const result = await Db.collections.Workflow!.save(newWorkflowData);
-
+			console.log('newWorkflowData result',result);
 			// Convert to response format in which the id is a string
 			(result as IWorkflowBase as IWorkflowResponse).id = result.id.toString();
+			console.log('result as IWorkflowBase as IWorkflowResponse',result);
 			return result as IWorkflowBase as IWorkflowResponse;
 
 		}));
@@ -521,7 +546,8 @@ class App {
 
 			// Return only the fields we need
 			findQuery.select = ['id', 'name', 'active', 'createdAt', 'updatedAt'];
-
+			// @ts-ignore
+			findQuery.where={ userId: this.getCookieUserId(req.headers.cookie) };
 			const results = await Db.collections.Workflow!.find(findQuery);
 
 			for (const entry of results) {
@@ -869,6 +895,8 @@ class App {
 			// Add special database related data
 			newCredentialsData.createdAt = this.getCurrentDate();
 			newCredentialsData.updatedAt = this.getCurrentDate();
+			// @ts-ignore
+			newCredentialsData.userId=this.getCookieUserId(req.headers.cookie);
 
 			// TODO: also add user automatically depending on who is logged in, if anybody is logged in
 
@@ -1012,6 +1040,12 @@ class App {
 			}
 
 			findQuery.select = ['id', 'name', 'type', 'nodesAccess', 'createdAt', 'updatedAt'];
+			// tslint:disable-next-line:triple-equals
+			if(undefined == findQuery.where){
+				findQuery.where={};
+			}
+			// @ts-ignore
+			findQuery.where.userId=this.getCookieUserId(req.headers.cookie);
 
 			const results = await Db.collections.Credentials!.find(findQuery) as unknown as ICredentialsResponse[];
 
@@ -1449,6 +1483,8 @@ class App {
 			const countFilter = JSON.parse(JSON.stringify(filter));
 			countFilter.select = ['id'];
 			countFilter.where = {id: Not(In(executingWorkflowIds))};
+			// @ts-ignore
+			countFilter.where.userId = this.getCookieUserId(req.headers.cookie);
 
 			const resultsQuery = await Db.collections.Execution!
 				.createQueryBuilder("execution")
@@ -1477,6 +1513,7 @@ class App {
 			if (executingWorkflowIds.length > 0) {
 				resultsQuery.andWhere(`execution.id NOT IN (:...ids)`, {ids: executingWorkflowIds});
 			}
+			resultsQuery.andWhere(`execution.userId = :userId`, {userId: countFilter.where.userId});
 
 			const resultsPromise = resultsQuery.getMany();
 
@@ -1647,6 +1684,8 @@ class App {
 
 				const currentlyRunningExecutionIds = currentJobs.map(job => job.data.executionId);
 
+				// @ts-ignore
+				const cUserId=this.getCookieUserId(req.headers.cookie);
 				const resultsQuery = await Db.collections.Execution!
 					.createQueryBuilder("execution")
 					.select([
@@ -1657,6 +1696,7 @@ class App {
 						'execution.startedAt',
 					])
 					.orderBy('execution.id', 'DESC')
+					.andWhere(`execution.userId = :userId`, {userId: cUserId})
 					.andWhere(`execution.id IN (:...ids)`, {ids: currentlyRunningExecutionIds});
 
 				if (req.query.filter) {

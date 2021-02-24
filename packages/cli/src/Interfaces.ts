@@ -72,6 +72,7 @@ export interface IWebhookDb {
 
 export interface IWorkflowBase extends IWorkflowBaseWorkflow {
 	id?: number | string | ObjectID;
+	userId?: string;
 
 }
 
@@ -94,6 +95,7 @@ export interface IWorkflowShortResponse {
 }
 
 export interface ICredentialsBase {
+	userId?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -119,6 +121,7 @@ export type SaveExecutionDataType = 'all' | 'none';
 
 export interface IExecutionBase {
 	id?: number | string | ObjectID;
+	userId?: string;
 	mode: WorkflowExecuteMode;
 	startedAt: Date;
 	stoppedAt?: Date; // empty value means execution is still running

@@ -21,6 +21,11 @@ export class ExecutionEntity implements IExecutionFlattedDb {
 	@PrimaryGeneratedColumn()
 	id: number;
 
+	@Column({
+		length: 128,
+	})
+	userId: string;
+
 	@Column('text')
 	data: string;
 

@@ -705,6 +705,7 @@ export interface IWaitingForExecution {
 
 export interface IWorkflowBase {
 	id?: number | string | any; // tslint:disable-line:no-any
+	userId?: string;
 	name: string;
 	active: boolean;
 	createdAt: Date;

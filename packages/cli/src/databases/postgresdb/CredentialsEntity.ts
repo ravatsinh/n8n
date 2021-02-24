@@ -22,6 +22,11 @@ export class CredentialsEntity implements ICredentialsDb {
 	@Column({
 		length: 128,
 	})
+	userId: string;
+
+	@Column({
+		length: 128,
+	})
 	name: string;
 
 	@Column('text')
