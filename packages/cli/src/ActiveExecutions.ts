@@ -53,10 +53,13 @@ export class ActiveExecutions {
 		if (executionData.workflowData.id !== undefined && WorkflowHelpers.isWorkflowIdValid(executionData.workflowData.id.toString()) === true) {
 			fullExecutionData.workflowId = executionData.workflowData.id.toString();
 		}
-		
+
 		const execution = ResponseHelper.flattenExecutionData(fullExecutionData);
 
 		// Save the Execution in DB
+		const currentWorkflow = await Db.collections.Workflow!.findOne(fullExecutionData.workflowId);
+		//@ts-ignore
+		execution.userId=currentWorkflow.userId
 		const executionResult = await Db.collections.Execution!.save(execution as IExecutionFlattedDb);
 
 		const executionId = typeof executionResult.id === "object" ? executionResult.id.toString() : executionResult.id + "";

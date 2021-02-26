@@ -495,15 +495,10 @@ class App {
 			newWorkflowData.userId = this.getCookieUserId(req.headers.cookie);
 
 			await this.externalHooks.run('workflow.create', [newWorkflowData]);
-			console.log('req Log: ',req.headers.cookie);
-			// @ts-ignore
-			console.log('this.getCookieUserId(req.headers.cookie)',this.getCookieUserId(req.headers.cookie));
 			// Save the workflow in DB
 			const result = await Db.collections.Workflow!.save(newWorkflowData);
-			console.log('newWorkflowData result',result);
 			// Convert to response format in which the id is a string
 			(result as IWorkflowBase as IWorkflowResponse).id = result.id.toString();
-			console.log('result as IWorkflowBase as IWorkflowResponse',result);
 			return result as IWorkflowBase as IWorkflowResponse;
 
 		}));
